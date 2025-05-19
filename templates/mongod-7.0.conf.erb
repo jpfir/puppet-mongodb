@@ -1,0 +1,51 @@
+# mongod.conf for 7.0
+
+# for documentation of all options, see:
+#   http://docs.mongodb.org/manual/reference/configuration-options/
+
+# where to write logging data.
+systemLog:
+  destination: file
+  logAppend: true
+  path: '<%= @logpath %>'
+
+# Where and how to store data.
+storage:
+  dbPath: '<%= @storage_dbpath %>'
+  <%- if @storage_engine -%>
+  engine: '<%= @storage_engine %>'
+  <%- end -%>
+
+# how the process runs
+processManagement:
+  timeZoneInfo: /usr/share/zoneinfo
+  <%- if @pidfilepath -%>
+  pidFilePath: '<%= @pidfilepath %>'
+  <%- end -%>
+
+# network interfaces
+net:
+  port: <%= @net_port %>
+  bindIp: <%= @net_bindip %>
+
+<% if @security_keyfile or @authorization -%>
+#security:
+security:
+  <%- if @authorization -%>
+  authorization: '<%= @authorization %>'
+  <%- end -%>
+  <%- if @security_keyfile -%>
+  keyFile: '<%= @security_keyfile %>'
+  <%- end -%>
+<% end -%>
+
+<% if @replication_oplogsizemb or @replication_replsetname -%>
+replication:
+  <%- if @replication_oplogsizemb -%>
+  oplogSizeMB: <%= @replication_oplogsizemb %>
+  <%- end -%>
+  <%- if @replication_replsetname -%>
+  replSetName: '<%= @replication_replsetname %>'
+  <%- end -%>
+<% end -%>
+

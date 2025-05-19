@@ -1,3 +1,9 @@
+#### 2025-05-19 - 1.0.9
+* Add support for zstd compression
+* Prevent ambiguous redirect errors by ensuring FILENAME is set before use.
+* Add cleanup checks to avoid rm errors when filenames or pipes are unset.
+* Add config templates to support mongod version 4.2 and 7.0.
+
 #### 2019-11-20 - 1.0.8
 * Change systemd LimitNPROC default to 48000 (#9, @osgpcq).
 

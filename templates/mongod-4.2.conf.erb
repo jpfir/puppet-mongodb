@@ -1,0 +1,63 @@
+# mongod.conf
+
+# for documentation of all options, see:
+#   http://docs.mongodb.org/manual/reference/configuration-options/
+
+# where to write logging data.
+systemLog:
+  destination: file
+  logAppend: true
+  path: '<%= @logpath %>'
+
+# Where and how to store data.
+storage:
+  dbPath: '<%= @storage_dbpath %>'
+  journal:
+    enabled: true
+  <%- if @storage_engine -%>
+  engine: '<%= @storage_engine %>'
+  <%- end -%>
+
+# how the process runs
+processManagement:
+  fork: true  # fork and run in background
+  pidFilePath: '<%= @pidfilepath %>'
+
+# network interfaces
+net:
+  bindIp: <%= @net_bindip %>
+  port: <%= @net_port %>
+  unixDomainSocket:
+    pathPrefix: '/var/run/mongodb'
+
+#security:
+<% if @security_keyfile or @authorization -%>
+security:
+  <%- if @authorization -%>
+  authorization: '<%= @authorization %>'
+  <%- end -%>
+  <%- if @security_keyfile -%>
+  keyFile: '<%= @security_keyfile %>'
+  <%- end -%>
+<% end -%>
+
+#operationProfiling:
+
+#replication:
+<% if @replication_oplogsizemb or @replication_replsetname -%>
+replication:
+  <%- if @replication_oplogsizemb -%>
+  oplogSizeMB: <%= @replication_oplogsizemb %>
+  <%- end -%>
+  <%- if @replication_replsetname -%>
+  replSetName: '<%= @replication_replsetname %>'
+  <%- end -%>
+<% end -%>
+
+#sharding:
+
+## Enterprise-Only Options
+
+#auditLog:
+
+#snmp:

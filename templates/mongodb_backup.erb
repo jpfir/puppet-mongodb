@@ -99,7 +99,7 @@ MONTHLYRETENTION="<%= @monthlyretention %>"
 # === ADVANCED OPTIONS ( Read the doc's below for details )===
 #=============================================================
 
-# Choose Compression type. (gzip, bzip2, pigz, pbzip2, xz)
+# Choose Compression type. (gzip, bzip2, pigz, pbzip2, xz, zstd)
 COMP="<%= @compression_method %>"
 
 # Compression parameters
@@ -383,7 +383,7 @@ dbdump () {
           >&2 echo "Error Log:"
           cat "$LOGERR"
         fi
-          rm $FILENAME.uncompressed
+          [ -n "$FILENAME" ] && rm -f "$FILENAME.uncompressed"
           return 1
       fi
       echo "Mongodump without compression finished at $(date +'%Y-%m-%d %H:%M:%S %Z')" >> "$LOGFILE"
@@ -393,11 +393,11 @@ dbdump () {
         $COMP -c $COMP_ARGS < $FILENAME.uncompressed > $FILENAME
         if [ "$?" -ne "0" ]; then
           >&2 echo "Something went wrong in compression using $COMP."
-          rm $FILENAME
-          rm $FILENAME.uncompressed
+          [ -n "$FILENAME" ] && rm -f "$FILENAME"
+          [ -n "$FILENAME" ] && rm -f "$FILENAME.uncompressed"
           return 1
         fi
-        rm $FILENAME.uncompressed
+        [ -n "$FILENAME" ] && rm -f "$FILENAME.uncompressed"
       else
         mv $FILENAME.uncompressed $FILENAME
       fi
@@ -643,13 +643,23 @@ if [ -z "$FILE" ]; then
 fi
 
 # Calculating the full filename
-if [ -n "$COMP" ]; then
-  [ "$COMP" = "gzip" ] || [ "$COMP" = "pigz" ] && FILENAME="$FILE.gz"
-  [ "$COMP" = "bzip2" ] || [ "$COMP" = "pbzip2" ] && FILENAME="$FILE.bz2"
-  [ "$COMP" = "xz" ] && FILENAME="$FILE.xz"
-else
-  FILENAME="$FILE"
-fi
+case "$COMP" in
+  gzip|pigz)
+    FILENAME="$FILE.gz"
+    ;;
+  bzip2|pbzip2)
+    FILENAME="$FILE.bz2"
+    ;;
+  xz)
+    FILENAME="$FILE.xz"
+    ;;
+  zstd)
+    FILENAME="$FILE.zst"
+    ;;
+  *)
+    FILENAME="$FILE"
+    ;;
+esac
 
 dbdump && post_backup
 
