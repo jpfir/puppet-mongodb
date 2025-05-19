@@ -10,7 +10,7 @@ class mongodb::backup (
   $cron_minute = fqdn_rand(60),
   $cron_user = 'root',
   $oplog = undef,
-  $compression_method = 'bzip2',
+  Enum['gzip', 'pigz', 'bzip2', 'pbzip2', 'xz', 'zstd'] $compression_method = 'bzip2',
   $compression_args = '',
   $mail_content = 'quiet',
   $mail_maxattsize = '4000',
@@ -28,8 +28,16 @@ class mongodb::backup (
 ) {
 
   # Ensure that the package for the mail command is installed
+  # On RHEL9 the 's-nail' package is used as 'mailx' replacement
+  $mailx_package = (versioncmp($::operatingsystemmajrelease, '9') >= 0) ? {
+    true  => 's-nail',
+    false => $mail_pkg,
+  }
+
+  $packages_to_ensure = [$mailx_package, $compression_method]
+
   if $ensure == 'present' {
-    ensure_packages($mail_pkg,{ ensure => 'installed' })
+    ensure_packages($packages_to_ensure, { ensure => 'installed' })
   }
 
   file { '/usr/local/sbin/mongodb_backup':
